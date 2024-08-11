@@ -87,4 +87,67 @@ const findPersonById = async (personId) => {
     }catch (err) {
         console.error(err);
     }};
-findPersonById('66b8f707dd7d58fc88ca0118');
+// findPersonById('66b8f707dd7d58fc88ca0118');
+
+
+// Effectuez des mises à jour classiques en exécutant Rechercher, Modifier, puis Enregistrer
+const updateFavoriteFood = async (personId) => {
+    try { const people = await Person.findById(personId);
+        person.favoriteFoods.push('Hamburger');
+            try { await people.save();
+                console.log('Informations mise à jour:', people);
+            }catch(err) {
+                console.error('Echec de la mise à jour', err);}
+    }catch (err) {
+        console.error(err);
+    }};
+updateFavoriteFood('66b8f707dd7d58fc88ca0118');
+  
+// // Effectuer de nouvelles mises à jour sur un document à l'aide de model.findOneAndUpdate()
+// const updatePersonAge = (personName) => {
+//     Person.findOneAndUpdate(
+//         { name: personName },
+//         { age: 20 },
+//         { new: true },
+//         (err, updatedPerson) => {
+//             if (err) console.error(err);
+//             else console.log('Informations mise à jour:', updatedPerson);
+//         }
+//         );
+//     };
+  
+// updatePersonAge('John');
+
+// // Supprimer un document à l'aide de model.findByIdAndRemove
+// const removePersonById = (personId) => {
+//     Person.findByIdAndRemove(personId, (err, removedPerson) => {
+//         if (err) console.error(err);
+//         else console.log('Personne supprimée:', removedPerson);
+//     });
+// };
+  
+// removePersonById('id_de_la_personne');
+
+// // Supprimer de nombreux documents avec model.remove() (Marie)
+// const removePeopleByName = (personName) => {
+//     Person.remove({ name: personName }, (err, result) => {
+//       if (err) console.error(err);
+//       else console.log('Personne supprimée:', result);
+//     });
+// };
+  
+// removePeopleByName('Mary');
+
+// //Rechercher des personnes aimant les burritos et trier les résultats
+// const findAndSortPeople = () => {
+//     Person.find({ favoriteFoods: 'Burritos' })
+//     .sort({ name: 1 })
+//     .limit(2)
+//     .select('-age')
+//     .exec((err, people) => {
+//         if (err) console.error(err);
+//         else console.log('ersonne trouvée:', people);
+//     });
+// };
+  
+// findAndSortPeople();
