@@ -16,12 +16,14 @@ const PORT = process.env.PORT || 7000;
 const MONGOURL = process.env.MONGO_URL;
 
 // Connexion à MongoDB et lancement du serveur
-mongoose.connect(MONGOURL).then(() => {
-  console.log("Base de donnée connectée avec succès.");
-  app.listen(PORT, () => {
-    console.log(`Le serveur s'exécute sur le port ${PORT}`);
-  });
-});
+const connectDB = async () => {
+    try {
+      await mongoose.connect(MONGOURL, {});
+      console.log('Base de donnée connectée! Le serveur est lancée au port localhost:${PORT}');
+    } catch (err) {
+      console.error('Erreur de la connexion:', err);
+    }
+};
 
 // Schema d'une personne
 const personSchema = new mongoose.Schema({
@@ -45,8 +47,8 @@ const createPerson = async () => {
     console.log('Personne enregistrée:', person);
     }catch(err) {
     console.error('Echec de l\'enregistrement', err)
-}};
-// createPerson();
+    }
+};
 
 // Créer de nombreux enregistrements avec model.create()
 const createPeople = async () => {
@@ -59,8 +61,8 @@ const createPeople = async () => {
         console.log('Personnes enregistrées:', arrayOfPeople);
     }catch (err) {
         console.error('Echec de l\'enregistrement', err);
-    }};
-// createPeople();
+    }
+};
 
 // Trouver toutes les personnes portant un prénom donné (John)
 const findPeopleByName = async (personName) => {
@@ -68,8 +70,8 @@ const findPeopleByName = async (personName) => {
         console.log('Personne trouvée:', people);
     }catch (err) {
         console.error('Personne non trouvée',err);
-    }};
-// findPeopleByName('John');
+    }
+};
 
 // Trouver une personne par aliment favori (Pizza)
 const findOneByFood = async (food) => {
@@ -77,8 +79,8 @@ const findOneByFood = async (food) => {
         console.log('Personne trouvée:', people);
     }catch (err) {
         console.error('Personne non trouvée', err);
-    }};
-// findOneByFood('Pizza');
+    }
+};
 
 // Trouver une personne par _id (Alice)
 const findPersonById = async (personId) => {
@@ -86,68 +88,81 @@ const findPersonById = async (personId) => {
         console.log('Personne trouvée par l\'ID:', people);
     }catch (err) {
         console.error(err);
-    }};
-// findPersonById('66b8f707dd7d58fc88ca0118');
-
+    }
+};
 
 // Effectuez des mises à jour classiques en exécutant Rechercher, Modifier, puis Enregistrer
 const updateFavoriteFood = async (personId) => {
     try { const people = await Person.findById(personId);
-        person.favoriteFoods.push('Hamburger');
-            try { await people.save();
-                console.log('Informations mise à jour:', people);
-            }catch(err) {
-                console.error('Echec de la mise à jour', err);}
-    }catch (err) {
-        console.error(err);
-    }};
-updateFavoriteFood('66b8f707dd7d58fc88ca0118');
+        if (!people) throw new Error('Personne introuvable');
+        people.favoriteFoods.push('Hamburger');
+        const updatedPerson = await people.save();
+        console.log('Informations mise à jour:', updatedPerson);
+        } catch (err) {
+        console.error('Echec de la mise à jour', err);
+    }
+};
   
-// // Effectuer de nouvelles mises à jour sur un document à l'aide de model.findOneAndUpdate()
-// const updatePersonAge = (personName) => {
-//     Person.findOneAndUpdate(
-//         { name: personName },
-//         { age: 20 },
-//         { new: true },
-//         (err, updatedPerson) => {
-//             if (err) console.error(err);
-//             else console.log('Informations mise à jour:', updatedPerson);
-//         }
-//         );
-//     };
-  
-// updatePersonAge('John');
+// Effectuer de nouvelles mises à jour sur un document à l'aide de model.findOneAndUpdate()
+const updatePersonAge = async (personName) => {
+    try {
+      const updatedPerson = await Person.findOneAndUpdate(
+        { name: personName },
+        { age: 20 },
+        { new: true }
+      );
+      console.log('Informations mises à jour:', updatedPerson);
+    } catch (err) {
+      console.error('Erreur lors de la mise à jour:', err);
+    }
+};
 
-// // Supprimer un document à l'aide de model.findByIdAndRemove
-// const removePersonById = (personId) => {
-//     Person.findByIdAndRemove(personId, (err, removedPerson) => {
-//         if (err) console.error(err);
-//         else console.log('Personne supprimée:', removedPerson);
-//     });
-// };
-  
-// removePersonById('id_de_la_personne');
+// Supprimer un document à l'aide de model.findByIdAndRemove
+const removePersonById = async (personId) => {
+    try {
+      const removedPerson = await Person.findByIdAndDelete(personId);
+      if (!removedPerson) throw new Error('Personne introuvable');
+      console.log('Personne supprimée:', removedPerson);
+    } catch (err) {
+      console.error('Echec de la suppression:', err);
+    }
+};
 
-// // Supprimer de nombreux documents avec model.remove() (Marie)
-// const removePeopleByName = (personName) => {
-//     Person.remove({ name: personName }, (err, result) => {
-//       if (err) console.error(err);
-//       else console.log('Personne supprimée:', result);
-//     });
-// };
-  
-// removePeopleByName('Mary');
+// Supprimer de nombreux documents avec model.remove() (Marie)
+const removePeopleByName = async (personName) => {
+    try {
+        const result = await Person.deleteMany({ name: personName });
+        console.log('Personne(s) supprimée(s):', result.deletedCount); // Affiche le nombre de documents supprimés
+    } catch (err) {
+        console.error('Erreur lors de la suppression:', err);
+    }
+};
 
-// //Rechercher des personnes aimant les burritos et trier les résultats
-// const findAndSortPeople = () => {
-//     Person.find({ favoriteFoods: 'Burritos' })
-//     .sort({ name: 1 })
-//     .limit(2)
-//     .select('-age')
-//     .exec((err, people) => {
-//         if (err) console.error(err);
-//         else console.log('ersonne trouvée:', people);
-//     });
-// };
-  
-// findAndSortPeople();
+//Rechercher des personnes aimant les burritos et trier les résultats
+const findAndSortPeople = async () => {
+    try {
+        const people = await Person.find({ favoriteFoods: 'Pizza' })
+            .sort({ name: 1 })
+            .limit(2)
+            .select('-age');
+        console.log('Personne trouvé', people);
+        } catch (err) {
+        console.error('Erreur dans la recherche:', err);
+    }
+};
+
+// Test de la base de donnée
+const main = async () => {
+    await connectDB();
+    await createPerson();
+    await createPeople();
+    await findPeopleByName('John');
+    await findOneByFood('Pizza');
+    await findPersonById('66b8f707dd7d58fc88ca0118');
+    await updateFavoriteFood('66b8fa30f4882a8751f12e74');
+    await updatePersonAge('John');
+    await removePersonById('66b8fa30f4882a8751f12e76');
+    await removePeopleByName('Mary');
+    await findAndSortPeople();
+};
+main();
